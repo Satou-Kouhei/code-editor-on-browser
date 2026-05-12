@@ -4,14 +4,24 @@
         <meta charset="utf-8">
         <link rel="stylesheet" href="./styles.css">
         <title>CodeEditor on BROWSER</title>
-        <script type="module" src="./main.js"></script>
+        
     </head>
-
+    
     <body>
         <h1>CodeEditor on BROWSER</h1>
         
         <main>
-
+            <!-- Import Map -->
+            <script type="importmap">
+                {
+                    "imports": {
+                        "codemirror": "https://esm.sh/codemirror",
+                        "@codemirror/": "https://esm.sh/@codemirror/",
+                        "@lezer/": "https://esm.sh/@lezer/"
+                    }
+                }
+            </script>
+            
             <!-- メイン：フォルダツリー部分 -->
             <section id="folder">
                 
@@ -26,7 +36,8 @@
             <section id="terminal">
                 
             </section>
-
+            
         </main>
+        <script type="module" src="./main.js"></script>
     </body>
 </html>
