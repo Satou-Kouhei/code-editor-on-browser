@@ -1,4 +1,5 @@
 import { Terminal } from '@xterm/xterm';
+import { executeGitCommand } from './git-terminal.js';
 
 // ターミナルを表示するHTML要素を取得する
 const terminalElement = document.getElementById('terminal');
@@ -19,11 +20,14 @@ term.write("$ ");
 
 // コマンド一覧
 const commands = {
-    help: () => {
+    help: (term) => {
         term.write('\r\n[Available Commands]\r\n - help  : Show this message\r\n - clear : Clear terminal');
     },
-    clear: () => {
+    clear: (term) => {
         term.clear();
+    },
+    git: async (term, args) => {
+        await executeGitCommand(term, args);
     }
 }
 
@@ -36,10 +40,18 @@ term.onData(data => {
     // エンター（改行コード）が押されたとき
     if(data === "\r") {
 
-        const command = currentLine.trim();
+        const line = currentLine.trim();
+
+        // 入力した文字列をスペースで分割する
+        const parts = line.split(/\s+/);
+        const command = parts[0];
+        const args = parts.slice(1);
+
+        console.log(args);
+        
 
         if(command in commands) {
-            commands[command]();
+            commands[command](term, args);
         }
         else if(command !== "") {
             term.write(`\r\nCommand not found: ${command}`);
