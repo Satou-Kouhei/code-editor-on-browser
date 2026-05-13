@@ -5,22 +5,23 @@
         <link rel="stylesheet" href="./styles.css">
         <title>CodeEditor on BROWSER</title>
         
+        <!-- Import Map -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "codemirror": "https://esm.sh/codemirror",
+                    "@codemirror/": "https://esm.sh/@codemirror/",
+                    "@lezer/": "https://esm.sh/@lezer/"
+                }
+            }
+        </script>
+        
     </head>
     
     <body>
         <h1>CodeEditor on BROWSER</h1>
         
         <main>
-            <!-- Import Map -->
-            <script type="importmap">
-                {
-                    "imports": {
-                        "codemirror": "https://esm.sh/codemirror",
-                        "@codemirror/": "https://esm.sh/@codemirror/",
-                        "@lezer/": "https://esm.sh/@lezer/"
-                    }
-                }
-            </script>
             
             <!-- メイン：フォルダツリー部分 -->
             <section id="folder">
