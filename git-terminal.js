@@ -1,15 +1,5 @@
-import git from 'isomorphic-git';
-import FS from '@isomorphic-git/lightning-fs';
+import { fetchRepositoryContents } from './github-api.js';
 
-// 仮想ドライブ（ファイルシステム）の初期化
-const fs = new FS("browser-fs");
-const dir = "/src";
-
-/**
- * 
- * @param {Terminal} term - xterm.jsのインスタンス
- * @param {string[]} args - 入力した引数の配列
- */
 export async function executeGitCommand(term, args) {
 
     // gitだけ入力したとき(後ろに何もつけなかったとき)
@@ -22,9 +12,43 @@ export async function executeGitCommand(term, args) {
     // サブコマンド(cloneなど)を取り出す
     const subCommand = args[0];
 
+    // コマンド処理
     if(subCommand === "clone") {
-        term.write("\r\nCloning repository...");
+        const repoPath = args[1];
+
+        // バリデーション：　引数があるか、スラッシュが含まれるか
+        if(!repoPath || !repoPath.includes("/")) {
+            term.write('\r\nUsage: git clone <username>/<repository>');
+            return;
+        }
+
+        const [owner, repo] = repoPath.split("/");
+        term.write(`\r\nCloning into '${repo}'...`);
+
+        try {
+            // github api の呼び出し(トークンは一旦空)
+            const data = await fetchRepositoryContents(owner, repo);
+
+            // つなぎこみテスト
+            term.write('\r\n--- Remote Files ---');
+
+            // データが配列か確認
+            if(Array.isArray(data)){
+                data.forEach(item => {
+                    const marker = item.type === "dir" ? "[DIR]" : "      ";
+                    term.write(`\r\n${marker}${item.name}`);
+                });
+            } else {
+                term.write(`\r\n[FILE] ${data.name || 'Unknown Item'}`);
+            }
+            term.write('\r\n--------------------');
+
+        } catch(error) {
+            term.write(`\r\nError: Fetch failed. (${error.message})`);
+        }
+
     } else {
-        term.write(`\r\nUnknown git command: ${subCommand}`);
+        // サポート外のサブコマンド
+        term.write(`\r\nUnknown git subcommand: ${subCommand}`);
     }
 }

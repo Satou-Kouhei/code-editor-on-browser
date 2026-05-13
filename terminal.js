@@ -47,9 +47,6 @@ term.onData(data => {
         const command = parts[0];
         const args = parts.slice(1);
 
-        console.log(args);
-        
-
         if(command in commands) {
             commands[command](term, args);
         }
