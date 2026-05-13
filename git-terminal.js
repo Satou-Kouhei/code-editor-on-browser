@@ -1,5 +1,8 @@
 import { fetchRepositoryContents } from './github-api.js';
 
+/**
+ * gitコマンドの入力を処理する関数
+ */
 export async function executeGitCommand(term, args) {
 
     // gitだけ入力したとき(後ろに何もつけなかったとき)
@@ -15,6 +18,20 @@ export async function executeGitCommand(term, args) {
     // コマンド処理
     if(subCommand === "clone") {
         const repoPath = args[1];
+        // 第三引数にフォルダ名が指定されていれば、さらにそれを取得する
+        const targetPath = args[2] || "";
+
+        if(repoPath.startsWith("http://") || repoPath.startsWith("https://")) {
+            if (repoPath.endsWith('.git')) {
+                repoPath = repoPath.slice(0, -4);
+            }
+
+            const urlPath = repoPath.replace(/\s/, "").split("/");
+            const repo = urlPath.pop();
+            const owner = urlPath.pop();
+            repoPath = `${owner}/${repo}`;
+        }
+
 
         // バリデーション：　引数があるか、スラッシュが含まれるか
         if(!repoPath || !repoPath.includes("/")) {
@@ -23,11 +40,16 @@ export async function executeGitCommand(term, args) {
         }
 
         const [owner, repo] = repoPath.split("/");
-        term.write(`\r\nCloning into '${repo}'...`);
+
+        if(targetPath) {
+            term.write(`\r\nFetching contents of '${targetPath}' from '${repo}'...`);
+        } else {
+            term.write(`\r\nCloning into '${repo}'...`);
+        }
 
         try {
             // github api の呼び出し(トークンは一旦空)
-            const data = await fetchRepositoryContents(owner, repo);
+            const data = await fetchRepositoryContents(owner, repo, targetPath, "");
 
             // つなぎこみテスト
             term.write('\r\n--- Remote Files ---');
@@ -35,8 +57,8 @@ export async function executeGitCommand(term, args) {
             // データが配列か確認
             if(Array.isArray(data)){
                 data.forEach(item => {
-                    const marker = item.type === "dir" ? "[DIR]" : "      ";
-                    term.write(`\r\n${marker}${item.name}`);
+                    const marker = item.type === 'tree' ? '[DIR] ' : '      ';
+                    term.write(`\r\n${marker}${item.path}`);
                 });
             } else {
                 term.write(`\r\n[FILE] ${data.name || 'Unknown Item'}`);
